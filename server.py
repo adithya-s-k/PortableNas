@@ -94,7 +94,7 @@ def handle_client(conn, addr):
                 
                 conn.send(send_data.encode(FORMAT))
                 
-            elif cmd == "UPLOAD":
+            elif cmd == "upload":
                 name, text = data[1], data[2]
                 filepath = os.path.join(SERVER_DATA_PATH, name)
                 with open(filepath, "w") as f:
@@ -103,30 +103,14 @@ def handle_client(conn, addr):
                 send_data = "OK@File uploaded successfully."
                 conn.send(send_data.encode(FORMAT))
 
-            elif cmd == "DELETE":
-                send_data = "hello"
-                files = os.listdir(SERVER_DATA_PATH)
-                send_data = "OK@"
-                filename = data[1]
-                print(filename)    
-                if len(files) == 0:
-                    send_data += "The server directory is empty"
-                else:
-                    if filename in files:
-                        os.system(f"rm {SERVER_DATA_PATH}/{filename}")
-                        send_data += "File deleted successfully."
-                    else:
-                        send_data += "File not found."
-
-                conn.send(send_data.encode(FORMAT))
-
-            elif cmd == "logout":
-                break
             elif cmd == "help":
                 data = "OK@"
                 data += "ls: List all the files from the server.\n"
-                data += "up <path>: Upload a file to the server.\n"
+                data += "cd <directory>: Change directory.\n"
+                data += "mkdir <directory>: Create a directory.\n"
+                data += "rmdir <directory>: Remove a directory.\n"
                 data += "rm <filename>: Delete a file from the server.\n"
+                data += "upload <path>: Upload a file to the server.\n"
                 data += "logout: Disconnect from the server.\n"
                 data += "help: List all the commands."
 
@@ -135,16 +119,20 @@ def handle_client(conn, addr):
             elif cmd == "invalid":
                 data = "OK@"
                 data += "Invalid command. Please type help to see all the commands."
-                
+
                 conn.send(data.encode(FORMAT))
+            
+            elif cmd == "logout":
+                break
         except:
             conn.send("OK@Error occured.".encode(FORMAT))
+            
     print(f"[DISCONNECTED] {addr} disconnected")
     conn.close()
 
 def main():
     # host = "localhost" 
-    # print("[STARTING] Server is starting")
+    print("[STARTING] Server is starting")
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind(ADDR)
     server.listen()
@@ -155,7 +143,7 @@ def main():
         conn, addr = server.accept()
         thread = threading.Thread(target=handle_client, args=(conn, addr))
         thread.start()
-        print(f"[ACTIVE CONNECTIONS] {threading.activeCount() - 1}")
+        print(f"[ACTIVE CONNECTIONS] {threading.active_count() - 1}")
 
 if __name__ == "__main__":
     main()
